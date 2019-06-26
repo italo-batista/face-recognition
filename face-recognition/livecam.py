@@ -79,24 +79,17 @@ def recognize(frame, process_this_frame):
         face_names = []
         for face_encoding in face_encodings:
             # See if the face is a match for the known face(s) in train data
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance = 0.6)  #TODO
+            matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance = 0.6)  #TODO tolerance
             name = "Unknown"
 
-            #TODO: improvement, modify the code below to use it
-            # # Use the known face with the smallest distance to the new face
-            # face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
-            # best_match_index = np.argmin(face_distances)
-            # if matches[best_match_index]:
-            #     name = known_face_names[best_match_index]
-
-            for i in range(len(matches)):
-                if matches[i]:
-                    name = users_ids[i]
+            # Use the known face with the smallest distance to the new face
+            face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
+            best_match_index = np.argmin(face_distances)
+            if matches[best_match_index]:
+                name = users_ids[best_match_index]
 
             face_names.append(name)
         
-        print(face_names)
-
         # Display the results
         draw_rectangle(face_locations, face_names, frame)
 
