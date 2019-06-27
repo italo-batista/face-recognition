@@ -1,11 +1,19 @@
+# coding: utf-8
+
 import face_recognition
 import cv2
 import numpy as np
+from enum import Enum
 
 import glob
 import os
 import sys
 import re
+
+
+class ModeType(Enum):
+    PLAYABLE = 1
+    EXPERIMENT = 2
 
 
 DATA_PATH = "../data"
@@ -21,7 +29,6 @@ def is_camera_valid(video_capture):
 
 
 def add_user_to_train(image_path, id):
-    print('Loading image: ' + image_path, id)
     image = face_recognition.load_image_file(image_path)
     
     # Return the 128-dimension face encoding for each face in the image.
@@ -33,14 +40,17 @@ def add_user_to_train(image_path, id):
         users_ids.append(id)
 
 
-def load_faces(path = DATA_PATH + '/faces/*.jpg'):
-    # TODO: switch between /faces/ or /train_data/ path depending on execution (if demo or 
-    # experiment). This will change how get the user id also (this will depend on how the dataset
-    # structure). Implement it also.
+def _load_faces(path):
     for image_path in glob.glob(path):
         img_name = image_path.split('/')[-1]
         user_id = img_name.split('.jpg')[0]
-        add_user_to_train(image_path, user_id)
+        add_user_to_train(image_path, user_id)    
+
+def load_test_data(path = DATA_PATH + '/train/*.jpg'):
+    _load_faces(path)
+
+def load_faces(path = DATA_PATH + '/faces/*.jpg'):
+    _load_faces(path)
 
 
 def draw_rectangle(face_locations, names, frame):
@@ -89,7 +99,7 @@ def recognize(frame, process_this_frame):
                 name = users_ids[best_match_index]
             
             if name == "Unknown":
-                response = input("Voçe quer se cadastrar ? Yn ")
+                response = input("Você quer se cadastrar? Yn ")
                 if 'n' in response:
                     pass
                 else:
@@ -110,12 +120,17 @@ def register(face_encoding, name):
     load_faces(image_name)
 
 
-def main():
+def main(mode):
     # Get a reference to webcam #0 (the default one)
     video_capture = cv2.VideoCapture(0)
     
     # Load a sample pictures and learn how to recognize trem.
-    load_faces()
+    print('Loading images...')
+    if mode == ModeType.EXPERIMENT:
+        load_test_data()
+    else:
+        load_faces()
+    print('Finish loading.')
     
     while True:
         # Grab a single frame of video
@@ -137,4 +152,11 @@ def main():
     
 
 if __name__ == "__main__":
-    sys.exit(main())
+
+    mode = ModeType.PLAYABLE
+
+    for i, arg in enumerate(sys.argv):
+        if i == 1 and arg == 'train':
+            mode = ModeType.EXPERIMENT
+
+    sys.exit(main(mode))
