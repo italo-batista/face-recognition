@@ -33,11 +33,11 @@ def add_user_to_train(image_path, id):
         users_ids.append(id)
 
 
-def load_faces():
+def load_faces(path = DATA_PATH + '/faces/*.jpg'):
     # TODO: switch between /faces/ or /train_data/ path depending on execution (if demo or 
     # experiment). This will change how get the user id also (this will depend on how the dataset
     # structure). Implement it also.
-    for image_path in glob.glob(DATA_PATH + '/faces/*.jpg'):
+    for image_path in glob.glob(path):
         img_name = image_path.split('/')[-1]
         user_id = img_name.split('.jpg')[0]
         add_user_to_train(image_path, user_id)
@@ -87,6 +87,14 @@ def recognize(frame, process_this_frame):
             best_match_index = np.argmin(face_distances)
             if matches[best_match_index]:
                 name = users_ids[best_match_index]
+            
+            if name == "Unknown":
+                response = input("Voçe quer se cadastrar ? Yn ")
+                if 'n' in response:
+                    pass
+                else:
+                    name = input("Digite seu nome: ")
+                    register(frame, name)
 
             face_names.append(name)
         
@@ -94,6 +102,12 @@ def recognize(frame, process_this_frame):
         draw_rectangle(face_locations, face_names, frame)
 
     process_this_frame = not process_this_frame
+
+
+def register(face_encoding, name):
+    image_name = DATA_PATH + '/faces/' + name + ".jpg"
+    cv2.imwrite(image_name, face_encoding)
+    load_faces(image_name)
 
 
 def main():
