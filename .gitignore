@@ -1,3 +1,6 @@
 /venv/
 .vscode/
 ia/
+**.pkl
+**/aligned-images
+**/validation-set
