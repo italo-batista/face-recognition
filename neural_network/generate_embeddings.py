@@ -6,7 +6,7 @@ import numpy as np
 import argparse, sys, os
 
 
-global img_dim_rows, img_dim_cols
+global img_dim_rows, img_dim_cols, embeddings_filepath
 
 
 def load_model(model_json_file_path='model.json', weights_file_path='model.h5'):
@@ -23,9 +23,10 @@ def load_model(model_json_file_path='model.json', weights_file_path='model.h5'):
 def _read_args():
     parser=argparse.ArgumentParser()
     parser.add_argument('--img-dim', default=28)
+    parser.add_argument('--target-file', default="../data/embeddings.csv")
     args=parser.parse_args()
 
-    return int(args.img_dim)
+    return int(args.img_dim), args.target_file
 
 
 def load_imgs_paths():
@@ -59,7 +60,7 @@ def is_header(line, sep):
 
 
 if __name__ == '__main__':         
-    IMG_DIM = _read_args()
+    IMG_DIM, embeddings_filepath = _read_args()
     img_dim_rows = img_dim_cols = IMG_DIM
 
     model = load_model()
@@ -67,12 +68,11 @@ if __name__ == '__main__':
     intermediate_layer_model = Model(
         inputs=model.input, outputs=model.get_layer(last_layer_name).output)
 
-    filepath = "tolerance_exp.csv"
-    first_time = os.path.isfile(filepath)
+    first_time = os.path.isfile(embeddings_filepath)
     mode = "w" if first_time else "a"
 
     imgs = load_imgs_paths()
-    with open(filepath, mode) as fp:
+    with open(embeddings_filepath, mode) as fp:
         if not first_time:
             fp.truncate(0)
         
@@ -86,7 +86,7 @@ if __name__ == '__main__':
             embeddings_inline = ";".join(embeddings_str)
 
             fp.write("%s;%s\n" % (img_class, embeddings_inline))
-
+    
 
 
 
