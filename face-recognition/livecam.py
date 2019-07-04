@@ -89,7 +89,7 @@ def recognize(frame, process_this_frame):
         face_names = []
         for face_encoding in face_encodings:
             # See if the face is a match for the known face(s) in train data
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance = 0.6)  #TODO tolerance
+            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
             name = "Unknown"
 
             # Use the known face with the smallest distance to the new face
