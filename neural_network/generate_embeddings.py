@@ -6,7 +6,7 @@ import numpy as np
 import argparse, sys, os
 
 
-global img_dim_rows, img_dim_cols, embeddings_filepath
+global img_dim_rows, img_dim_cols, embeddings_filepath, imgs_source_folder_path
 
 
 def load_model(model_json_file_path='model.json', weights_file_path='model.h5'):
@@ -24,15 +24,15 @@ def _read_args():
     parser=argparse.ArgumentParser()
     parser.add_argument('--img-dim', default=28)
     parser.add_argument('--target-file', default="../data/embeddings.csv")
+    parser.add_argument('--imgs-paths', default="../data/aligned-images/test/")    
     args=parser.parse_args()
 
-    return int(args.img_dim), args.target_file
+    return int(args.img_dim), args.target_file, args.imgs_paths
 
 
-def load_imgs_paths():
-    col_dir = "../data/aligned-images/test/"
+def load_imgs_paths(imgs_source_folder_path):
     imgs = []
-    for full_path, dirnames, filenames in os.walk(col_dir):
+    for full_path, dirnames, filenames in os.walk(imgs_source_folder_path):
         if len(dirnames) == 0:  # there is no subdir in current dir
             full_filenames_paths = map(
                 lambda x: full_path + "/" + x,
@@ -60,7 +60,7 @@ def is_header(line, sep):
 
 
 if __name__ == '__main__':         
-    IMG_DIM, embeddings_filepath = _read_args()
+    IMG_DIM, embeddings_filepath, imgs_source_folder_path = _read_args()
     img_dim_rows = img_dim_cols = IMG_DIM
 
     model = load_model()
@@ -71,13 +71,11 @@ if __name__ == '__main__':
     first_time = os.path.isfile(embeddings_filepath)
     mode = "w" if first_time else "a"
 
-    imgs = load_imgs_paths()
+    imgs = load_imgs_paths(imgs_source_folder_path)
     with open(embeddings_filepath, mode) as fp:
         if not first_time:
             fp.truncate(0)
         
-        fp.write("%s;%s\n" % ("label", ";".join(["x"+str(n) for n in range(250)])))
-
         for image_path in imgs:
             img_class = image_path.split("/")[-2]
             embeddings = get_img_embeddings(image_path)
