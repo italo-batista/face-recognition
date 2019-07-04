@@ -23,35 +23,28 @@ global img_dim_rows, img_dim_cols
 # https://datascience.stackexchange.com/questions/45282/generating-image-embedding-using-cnn
 
 
-def get_data_generator(data_path, datagen, subset):
-    generator = datagen.flow_from_directory(
+def get_datagen(data_path, datagen, subset):
+    return datagen.flow_from_directory(
         data_path,
-        # The target_size is the size of your input images,every image will be resized to this size
         target_size=(img_dim_rows, img_dim_cols),
         batch_size=BATCH_SIZE,
         class_mode='categorical',
         subset=subset
     )
 
-    return generator
 
+def get_datagens(test_data_path, train_data_path):
+    test_datagen = ImageDataGenerator(horizontal_flip=False)
+    train_datagen = ImageDataGenerator(horizontal_flip=False, validation_split=0.2)
 
-def get_data_generators(test_data_path, train_data_path):
-    test_datagen = ImageDataGenerator()
     test_generator = test_datagen.flow_from_directory(
         test_data_path,
-        # The target_size is the size of your input images,every image will be resized to this size
         target_size=(img_dim_rows, img_dim_cols),
         batch_size=BATCH_SIZE,
         class_mode='categorical'
     )
-
-    train_datagen = ImageDataGenerator(
-        horizontal_flip=False, validation_split=0.2)
-    train_generator = get_data_generator(
-        train_data_path, train_datagen, 'training')
-    validation_generator = get_data_generator(
-        train_data_path, train_datagen, 'validation')
+    train_generator = get_datagen(train_data_path, train_datagen, 'training')
+    validation_generator = get_datagen(train_data_path, train_datagen, 'validation')
 
     return test_generator, train_generator, validation_generator
 
@@ -72,7 +65,7 @@ def get_model():
     return model
 
 
-def train(model):
+def train(model, train_generator, validation_generator):
     model.compile(
         loss=keras.losses.categorical_crossentropy,
         optimizer=keras.optimizers.Adadelta(), 
@@ -83,7 +76,7 @@ def train(model):
         validation_data=validation_generator,
         validation_steps=ceil(len(validation_generator) / BATCH_SIZE),
         epochs=EPOCHS,
-        verbose=2,
+        verbose=1,
     )
     return model
 
@@ -110,8 +103,8 @@ def _get_num_of_classes(train_data_path, test_data_path):
 def _read_args():
     parser=argparse.ArgumentParser()
 
-    parser.add_argument('--test-data-path', default='validation-set')
-    parser.add_argument('--train-data-path', default='aligned-images')
+    parser.add_argument('--test-data-path', default='../data/aligned-images/test')
+    parser.add_argument('--train-data-path', default='../data/aligned-images/train')
     parser.add_argument('--batch-size', default=128)
     parser.add_argument('--epochs', default=12)
     parser.add_argument('--img-dim', default=28)
@@ -127,8 +120,8 @@ if __name__ == '__main__':
     img_dim_rows = img_dim_cols = IMG_DIM
   
     test_generator, train_generator, validation_generator = \
-        get_data_generators('validation-set', 'aligned-images')
+        get_datagens(TEST_DATA_PATH, TRAIN_DATA_PATH)
 
     model = get_model()
-    train(model)
+    train(model, train_generator, validation_generator)
     save(model)

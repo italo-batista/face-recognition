@@ -46,8 +46,10 @@ def _load_faces(path):
         user_id = img_name.split('.jpg')[0]
         add_user_to_train(image_path, user_id)    
 
+
 def load_test_data(path = DATA_PATH + '/train/*.jpg'):
     _load_faces(path)
+
 
 def load_faces(path = DATA_PATH + '/faces/*.jpg'):
     _load_faces(path)
