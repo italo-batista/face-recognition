@@ -30,7 +30,7 @@ Run the openface scripts from inside the openface root directory:
 
 First, do pose detection and alignment:
 
-`./util/align-dlib.py ./../ia-ia-oh/steps/training-images/ align outerEyesAndNose ./aligned-images/ --size 96`
+`./util/align-dlib.py ./../ia-ia-oh/data/train/ align outerEyesAndNose ./../ia-ia-oh/data/aligned-images/ --size 96`
 
 Second, generate the representations from the aligned images:
 
