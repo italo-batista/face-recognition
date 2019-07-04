@@ -6,6 +6,9 @@ import numpy as np
 import argparse, sys, os
 
 
+global img_dim_rows, img_dim_cols
+
+
 def load_model(model_json_file_path='model.json', weights_file_path='model.h5'):
     json_file = open(model_json_file_path, 'r')
     loaded_model_json = json_file.read()
@@ -38,6 +41,23 @@ def load_imgs_paths():
     return imgs
 
 
+def get_img_embeddings(img_path):
+    img = image.load_img(image_path, target_size=(img_dim_rows, img_dim_cols))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    # x = preprocess_input(img)
+    intermediate_output = intermediate_layer_model.predict(x)
+    embeddings = intermediate_output[0]
+    return embeddings
+
+
+def is_header(line, sep):
+    line_splitted = line.split(sep)
+    items_types = [type(item) for item in line_splitted]
+    only_str = all(item_type == str for item_type in items_types)
+    return only_str
+
+
 if __name__ == '__main__':         
     IMG_DIM = _read_args()
     img_dim_rows = img_dim_cols = IMG_DIM
@@ -47,14 +67,27 @@ if __name__ == '__main__':
     intermediate_layer_model = Model(
         inputs=model.input, outputs=model.get_layer(last_layer_name).output)
 
+    filepath = "tolerance_exp.csv"
+    first_time = os.path.isfile(filepath)
+    mode = "w" if first_time else "a"
+
     imgs = load_imgs_paths()
-    for image_path in imgs:
-        img = image.load_img(image_path, target_size=(img_dim_rows, img_dim_cols))
-        x = image.img_to_array(img)
-        x = np.expand_dims(x, axis=0)
-        # x = preprocess_input(img)
-        intermediate_output = intermediate_layer_model.predict(x)
-        print(intermediate_output[0])
+    with open(filepath, mode) as fp:
+        if not first_time:
+            fp.truncate(0)
+        
+        fp.write("%s;%s\n" % ("label", ";".join(["x"+str(n) for n in range(250)])))
+
+        for image_path in imgs:
+            img_class = image_path.split("/")[-2]
+            embeddings = get_img_embeddings(image_path)
+            
+            embeddings_str = list(map(str, embeddings)) 
+            embeddings_inline = ";".join(embeddings_str)
+
+            fp.write("%s;%s\n" % (img_class, embeddings_inline))
+
+
 
 
 
