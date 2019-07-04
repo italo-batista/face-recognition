@@ -34,6 +34,7 @@ def get_datagen(data_path, datagen, subset):
 
 
 def get_datagens(test_data_path, train_data_path):
+    print("Loading data.....\n")
     test_datagen = ImageDataGenerator(horizontal_flip=False)
     train_datagen = ImageDataGenerator(horizontal_flip=False, validation_split=0.2)
 
@@ -45,7 +46,7 @@ def get_datagens(test_data_path, train_data_path):
     )
     train_generator = get_datagen(train_data_path, train_datagen, 'training')
     validation_generator = get_datagen(train_data_path, train_datagen, 'validation')
-
+    print("\n")
     return test_generator, train_generator, validation_generator
 
 
@@ -66,6 +67,7 @@ def get_model():
 
 
 def train(model, train_generator, validation_generator):
+    print("\n\nTraining neural network....\n\n")
     model.compile(
         loss=keras.losses.categorical_crossentropy,
         optimizer=keras.optimizers.Adadelta(), 
@@ -110,6 +112,10 @@ def _read_args():
     parser.add_argument('--img-dim', default=28)
 
     args=parser.parse_args()
+
+    print("\n\nRunning with the following arguments:")
+    print(args)
+    print("\n")
 
     return args.test_data_path, args.train_data_path, int(args.batch_size), int(args.epochs), int(args.img_dim)
 
