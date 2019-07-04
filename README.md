@@ -1,6 +1,10 @@
-Here we will use a virtual enviroment
+## Obtain Data
+
+We use the [VGGFACE2](http://www.robots.ox.ac.uk/~vgg/data/vgg_face2/data_infor.html) database. Download it and extract the `train` folder to the `/data` directory
 
 ## Executing in a Virtual Enviroment
+
+We recommend to use a virtual enviroment.
 
 Install virtualvenv
 
@@ -18,7 +22,7 @@ Create your enviroment (here we will use _venv_)
 
 `deactivate`
 
-### Instaling depdendencies
+## Instaling depdendencies
 
 `python -m pip3 install -r requirements.txt`
 
