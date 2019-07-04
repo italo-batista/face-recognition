@@ -4,19 +4,14 @@ from os import makedirs
 from os.path import exists, join
 
 import keras
-from keras.models import Model
-from keras.preprocessing import image
 from keras.models import Sequential, model_from_json
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras import backend as K
 from keras.preprocessing.image import ImageDataGenerator
-from keras.applications.resnet50 import preprocess_input, decode_predictions
 from math import ceil
 import numpy as np
-import sys
-import os
-import argparse, sys
+import sys, os, argparse
 
 
 global TEST_DATA_PATH, TRAIN_DATA_PATH, BATCH_SIZE, EPOCHS, IMG_DIM, num_classes
@@ -61,11 +56,11 @@ def get_data_generators(test_data_path, train_data_path):
     return test_generator, train_generator, validation_generator
 
 
-def create_model():
-        # https://keras.io/examples/tensorboard_embeddings_mnist/
+# https://keras.io/examples/tensorboard_embeddings_mnist/
+def get_model():
     model = Sequential()
-    model.add(Conv2D(32, kernel_size=(3, 3), activation='relu',
-                     input_shape=(img_dim_rows, img_dim_cols, 3)))
+    model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', \
+        input_shape=(img_dim_rows, img_dim_cols, 3)))
     model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
@@ -77,7 +72,30 @@ def create_model():
     return model
 
 
-def get_num_of_classes(train_data_path, test_data_path):
+def train(model):
+    model.compile(
+        loss=keras.losses.categorical_crossentropy,
+        optimizer=keras.optimizers.Adadelta(), 
+        metrics=['accuracy'])
+    model.fit_generator(
+        train_generator,
+        steps_per_epoch=(ceil(len(train_generator) / BATCH_SIZE)),
+        validation_data=validation_generator,
+        validation_steps=ceil(len(validation_generator) / BATCH_SIZE),
+        epochs=EPOCHS,
+        verbose=2,
+    )
+    return model
+
+
+def save(model):
+    model_json = model.to_json()
+    with open("model.json", "w") as json_file:
+        json_file.write(model_json)
+    model.save_weights("model.h5")
+
+
+def _get_num_of_classes(train_data_path, test_data_path):
     n_test_folders, n_train_folders = 0, 0
     for _, dirnames, _ in os.walk(train_data_path):
         n_train_folders += len(dirnames)
@@ -105,37 +123,12 @@ def _read_args():
 
 if __name__ == '__main__':         
     TEST_DATA_PATH, TRAIN_DATA_PATH, BATCH_SIZE, EPOCHS, IMG_DIM = _read_args()
-    num_classes = get_num_of_classes(TRAIN_DATA_PATH, TEST_DATA_PATH)
+    num_classes = _get_num_of_classes(TRAIN_DATA_PATH, TEST_DATA_PATH)
     img_dim_rows = img_dim_cols = IMG_DIM
   
+    test_generator, train_generator, validation_generator = \
+        get_data_generators('validation-set', 'aligned-images')
 
-    test_generator, train_generator, validation_generator = get_data_generators(
-        'validation-set', 'aligned-images')
-
-    model = create_model()
-    model.compile(loss=keras.losses.categorical_crossentropy,
-                optimizer=keras.optimizers.Adadelta(),
-                metrics=['accuracy'])
-    history = model.fit_generator(
-        train_generator,
-        steps_per_epoch=(ceil(len(train_generator) / BATCH_SIZE)),
-        epochs=EPOCHS,
-        verbose=1,
-        validation_data=validation_generator,
-        validation_steps=(ceil(len(validation_generator) / BATCH_SIZE))
-    )
-
-
-    image_path = '../data/faces/icaro.jpg'
-
-    layer_name = 'dense_2'
-    intermediate_layer_model = Model(
-        inputs=model.input, outputs=model.get_layer(layer_name).output)
-
-    img = image.load_img(image_path, target_size=(img_dim_rows, img_dim_cols))
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
-    intermediate_output = intermediate_layer_model.predict(x)
-
-    print(intermediate_output[0])
+    model = get_model()
+    train(model)
+    save(model)
