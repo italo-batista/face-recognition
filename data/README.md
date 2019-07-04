@@ -31,3 +31,5 @@ data /
       - labelX/
         - img15345.jpg
         - img8546653.jpg
+
+* last step at [step3](https://github.com/italo-batista/ia-ia-oh/blob/master/steps/step3.md)
