@@ -2,11 +2,15 @@
 
 Make sure you have python, OpenFace and dlib installed. You can either [install them manually](https://cmusatyalab.github.io/openface/setup/) or use a preconfigured docker image that has everying already installed:
 
-```bash
-docker pull bamos/openface
-docker run -p 9000:9000 -p 8000:8000 -t -i bamos/openface /bin/bash
-cd /root/openface
+#### Installings openface manually
+
 ```
+git clone https://github.com/cmusatyalab/openface.git 
+cd openface
+python setup.py install 
+```
+Download dlibs models with: `./models/get-models.sh`
+
 
 ## Step 1
 

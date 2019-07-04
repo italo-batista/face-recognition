@@ -12,3 +12,4 @@ keras
 h5py
 pandas
 sklearn
+opencv-python
