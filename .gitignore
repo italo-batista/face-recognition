@@ -4,3 +4,4 @@ ia/
 **.pkl
 **/aligned-images
 **/validation-set
+/data
