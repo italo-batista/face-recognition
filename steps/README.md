@@ -8,3 +8,4 @@
 #### To download the trained model:
 
 - sh models/get-models.sh
+- copy the file ~/openface/models/dlib/shape_predictor_68_face_landmarks.dat to this directory
