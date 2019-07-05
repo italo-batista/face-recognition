@@ -29,4 +29,8 @@ while True:
     except:
         break
 
-print(results)
+r = open('extrated.csv', 'a')
+for key, value in results.items():
+    r.write('{},{},{},{}'.format(value['accept'], value['false_positive'],value['false_negative'], key))
+
+r.close()
